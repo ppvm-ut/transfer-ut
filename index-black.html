@@ -306,6 +306,11 @@ body {
 .sx-orb svg { display: block; overflow: visible; }
 .lg-piece { stroke: #0365E3; stroke-width: 0; stroke-linejoin: round; transform-origin: 40px 40px; }
 .lg-solid { opacity: 0; }
+/* final screen of the usability test (transfer) */
+.fin-content { flex: 1; min-height: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 0 32px; text-align: center; }
+.fin-title { margin: 0; font: 600 24px/32px var(--font-onest); color: var(--content-primary); }
+.fin-sub { margin: 0; font: 400 16px/22px var(--font-onest); color: var(--content-secondary); }
+.fin .sx-btn { text-decoration: none; }
 /* softer easing for the success sequence (overrides) */
 .sx-halo { transition: transform .5s cubic-bezier(.16,1,.3,1), opacity .35s ease-out; }
 .sx.is-morph .sx-halo { transition-delay: .18s; }
@@ -432,10 +437,16 @@ body {
           '<div class="sx-amount sx-reveal"><p class="sx-value" data-el="sxValue"></p><p class="sx-caption" data-el="sxCaption"></p></div></div>' +
           '<div class="sx-receipt sx-reveal" data-el="sxReceipt"></div></div>' +
         '<div class="sx-footer sx-reveal">' +
-          '<button class="sx-btn sx-btn--primary" type="button" data-act="done"><span>Отлично</span></button></div>' +
+          '<button class="sx-btn sx-btn--primary" type="button" data-act="' + (T ? "done" : "finish") + '"><span>Отлично</span></button></div>' +
         '<div class="homeind sx-homeind">' + I.homeind + '</div>' +
         '<div class="sx-orb" data-el="orb" aria-hidden="true">' + I.loaderLogo.replace(/_2012_145826/g, "_" + mode) + '</div>' +
       '</section>' +
+      // ---------- final screen of the usability test (transfer only) ----------
+      (T ? '' : '<section class="screen fin" data-s="fin" aria-label="Задание выполнено" hidden>' + sysbar() +
+        '<div class="fin-content"><p class="fin-title">Задание выполнено</p><p class="fin-sub">Пожалуйста, вернитесь на страницу, где начали тестирование</p></div>' +
+        '<div class="sx-footer"><a class="sx-btn sx-btn--primary" href="https://app.pthwy.ru/SxSWb" target="_top">Вернуться к тестированию</a></div>' +
+        '<div class="homeind">' + I.homeind + '</div>' +
+      '</section>') +
       // ---------- card sheet ----------
       '<div class="sheet-layer" data-layer="card" hidden><div class="scrim" data-act="sheet-close"></div>' +
         '<div class="sheet-stack" role="dialog" aria-modal="true" data-el="cardDialog" aria-label="Выберите карту"><div class="handle"></div><div class="sheet-body"><div class="sheet">' +
@@ -455,6 +466,7 @@ body {
     var $ = function (sel) { return root.querySelector(sel); };
     var E = function (n) { return $('[data-el="' + n + '"]'); };
     var scr = { main: $('[data-s="main"]'), done: $('[data-s="done"]') };
+    if (!T) scr.fin = $('[data-s="fin"]');
     var layers = { card: $('[data-layer="card"]'), promo: $('[data-layer="promo"]') };
 
     var st;
@@ -708,7 +720,8 @@ body {
       stopSuccess(); reset(); buildAdds(); render(); renderField();
       Object.keys(layers).forEach(function (k) { if (layers[k]) { layers[k].hidden = true; layers[k].classList.remove("is-open"); } });
       if (T) E("pfoot").classList.remove("kb-on");
-      scr.main.hidden = true; scr.done.hidden = true; scr.main.style.zIndex = scr.done.style.zIndex = ""; busy = false;
+      scr.main.hidden = true; scr.done.hidden = true; scr.main.style.zIndex = scr.done.style.zIndex = "";
+      if (scr.fin) { scr.fin.hidden = true; scr.fin.style.zIndex = ""; } busy = false;
     }
     // entry from «Главная»: the flow is bound to the card that is active there
     function open(cardId) {
@@ -726,6 +739,7 @@ body {
       if (act === "pick-dest") { openCards("dest"); return; }
       if (act === "card-confirm") { confirmCard(); return; }
       if (act === "promo-apply") { applyPromo(); return; }
+      if (act === "finish") { go("fin", "fwd"); return; }
       if (act === "done") { app.home(scr.done, function () { restart(); }); return; }
       var opt = t.closest(".card-opt");
       if (opt && root.contains(opt)) {

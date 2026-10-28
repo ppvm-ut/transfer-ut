@@ -441,7 +441,7 @@ body {
       // ---------- final screen of the usability test (transfer only) ----------
       (T ? '' : '<section class="screen fin" data-s="fin" aria-label="Задание выполнено" hidden>' + sysbar() +
         '<div class="fin-content"><p class="fin-title">Задание выполнено</p><p class="fin-sub">Пожалуйста, вернитесь на страницу, где начали тестирование</p></div>' +
-        '<div class="sx-footer"><a class="sx-btn sx-btn--primary" href="https://app.pthwy.ru/SxSWb" target="_top">Вернуться к тестированию</a></div>' +
+        '<div class="sx-footer"><a class="sx-btn sx-btn--primary" href="https://app.pthwy.ru/SxSWb" target="_top" data-act="return">Вернуться к тестированию</a></div>' +
         '<div class="homeind">' + I.homeind + '</div>' +
       '</section>') +
       // ---------- card sheet ----------
@@ -736,6 +736,13 @@ body {
       if (act === "pick-dest") { openCards("dest"); return; }
       if (act === "card-confirm") { confirmCard(); return; }
       if (act === "promo-apply") { applyPromo(); return; }
+      // back to the testing service: close the tab; if the browser refuses, follow the link instead
+      if (act === "return") {
+        e.preventDefault();
+        try { window.close(); } catch (err) {}
+        setTimeout(function () { if (!window.closed) (window.top || window).location.href = a.href; }, 500);
+        return;
+      }
       if (act === "finish") { go("fin", "fwd"); return; }
       if (act === "done") { app.home(scr.done, function () { restart(); }); return; }
       var opt = t.closest(".card-opt");
